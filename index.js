@@ -146,12 +146,22 @@ async function run() {
         // Payment releted apis
         app.post('/payments', verifyJWT, async (req, res) => {
             const payment = req.body;
-            const insertResult = await paymentCollection.insertOne(payment);
-            const query = { _id: { $in: payment.selectedClasses.map(id => new ObjectId(id)) } }
-            const deleteResult = await selectedCollection.deleteMany(query);
-            res.send({ insertResult, deleteResult });
-        })
 
+            const insertResult = await paymentCollection.insertOne(payment);
+
+            const selectedClassIds = payment.selectedClasses.map(id => new ObjectId(id));
+            const query = { _id: { $in: selectedClassIds } };
+            const deleteResult = await selectedCollection.deleteMany(query);
+
+            // Update classesCollection with enrolled classes
+            const myclassesIds = payment.classes.map(id => new ObjectId(id))
+            const updateResult = await classesCollection.updateMany(
+                { _id: { $in: myclassesIds }, availableSeats: { $gt: 0 }, totalEnroll: { $gt: 0 } },
+                { $inc: { availableSeats: -1, totalEnroll: 1 } }
+            );
+
+            res.send({ insertResult, deleteResult, updateResult });
+        });
 
 
 
