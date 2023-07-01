@@ -97,6 +97,23 @@ async function run() {
         })
 
 
+        // Enrolled Apis
+        app.get('/enrolled', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            if (!email) {
+                res.send([]);
+            }
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: 'forbidden access' });
+            }
+            const query = { email: email }
+            const result = await paymentCollection.find(query).toArray();
+            res.send(result);
+        });
+
+
+
         // Payment 
         app.get('/payment', verifyJWT, async (req, res) => {
             const email = req.query.email;
