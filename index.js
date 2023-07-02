@@ -64,6 +64,63 @@ async function run() {
             res.send(result);
         })
 
+        app.post('/classes', verifyJWT, async (req, res) => {
+            const newClass = req.body;
+            const result = await classesCollection.insertOne(newClass)
+            res.send(result)
+        })
+
+
+        app.get('/myClasses/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await classesCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.get('/myClasses', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            if (!email) {
+                res.send([]);
+            }
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: 'forbidden access' });
+            }
+            const query = { email: email }
+            const result = await classesCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        app.patch('/myClasses/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const classUpdate = req.body;
+            const updateClassDetails = {
+                $set: {
+                    name: classUpdate.name,
+                    price: classUpdate.price,
+                    availableSeats: classUpdate.availableSeats,
+                    instructorName: classUpdate.instructorName,
+                    image: classUpdate.image,
+                    email: classUpdate.email,
+                    status: classUpdate.status,
+                    totalEnroll: classUpdate.totalEnroll,
+                    
+                }
+            }
+            const result = await classesCollection.updateOne(filter ,updateClassDetails , options);
+            res.send(result)
+        })
+
+
+        app.delete('/myClasses/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await classesCollection.deleteOne(query);
+            res.send(result);
+        })
 
 
         // selected APIS
@@ -84,7 +141,6 @@ async function run() {
 
         app.post('/selected', async (req, res) => {
             const classes = req.body;
-            console.log(classes);
             const result = await selectedCollection.insertOne(classes);
             res.send(result)
         })
@@ -155,8 +211,9 @@ async function run() {
 
             // Update classesCollection with enrolled classes
             const myclassesIds = payment.classes.map(id => new ObjectId(id))
+            console.log(myclassesIds)
             const updateResult = await classesCollection.updateMany(
-                { _id: { $in: myclassesIds }, availableSeats: { $gt: 0 }, totalEnroll: { $gt: 0 } },
+                { _id: { $in: myclassesIds }, availableSeats: { $gt: 0 }, totalEnroll: { $gte: 0 } },
                 { $inc: { availableSeats: -1, totalEnroll: 1 } }
             );
 
