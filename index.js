@@ -47,6 +47,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const classesCollection = client.db("heroAcademy").collection("classes");
+        const discountClassesCollection = client.db("heroAcademy").collection("discountClasses");
         const usersCollection = client.db("heroAcademy").collection("users");
         const selectedCollection = client.db("heroAcademy").collection("selected");
         const paymentCollection = client.db("heroAcademy").collection("payments");
@@ -236,6 +237,12 @@ async function run() {
             res.send(result);
         })
 
+
+        // Discount Classes Apis
+        app.get('/discountClasses', async (req, res) => {
+            const result = await discountClassesCollection.find().toArray();
+            res.send(result);
+        })
 
         // selected APIS
 
