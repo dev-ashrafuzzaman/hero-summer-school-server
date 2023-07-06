@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
-
+// Vercel All Okay but Slow And Some Time Not Responce
 // middleWire
 app.use(cors());
 app.use(express.json());
@@ -153,7 +153,7 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/classes', verifyJWT,verifyInstructor, async (req, res) => {
+        app.post('/classes', verifyJWT, verifyInstructor, async (req, res) => {
             const newClass = req.body;
             const result = await classesCollection.insertOne(newClass)
             res.send(result)
@@ -186,7 +186,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/myClasses/:id',  async (req, res) => {
+        app.get('/myClasses/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await classesCollection.findOne(query);
@@ -227,14 +227,6 @@ async function run() {
             }
             const result = await classesCollection.updateOne(filter, updateClassDetails, options);
             res.send(result)
-        })
-
-
-        app.delete('/myClasses/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await classesCollection.deleteOne(query);
-            res.send(result);
         })
 
 
@@ -374,7 +366,7 @@ async function run() {
                 .toArray();
 
             res.send({
-                totalRevenue, users, totalClasses, totalInstructor, SingleInstructor, totaldenied, totalOrders, totalApproved,totalpending, populerClasses
+                totalRevenue, users, totalClasses, totalInstructor, SingleInstructor, totaldenied, totalOrders, totalApproved, totalpending, populerClasses
             })
         })
 
